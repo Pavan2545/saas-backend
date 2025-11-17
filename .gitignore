@@ -1,0 +1,19 @@
+# Maven target folder
+target/
+
+# IntelliJ / VS Code
+.idea/
+*.iml
+*.ipr
+*.iws
+.vscode/
+
+# Logs
+*.log
+
+# OS files
+.DS_Store
+
+# Spring Boot local configs
+application-local.properties
+.env
