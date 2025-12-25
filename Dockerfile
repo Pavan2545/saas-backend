@@ -1,19 +1,26 @@
-# ---------- BUILD STAGE ----------
-FROM maven:3.9.4-eclipse-temurin-17 AS build
+# ---------- Build stage ----------
+FROM maven:3.8.8-eclipse-temurin-11 AS build
 WORKDIR /app
 
-COPY pom.xml mvnw* ./
-COPY .mvn .mvn
+# Copy pom first for dependency caching
+COPY pom.xml .
+RUN mvn dependency:go-offline
 
-COPY . .
+# Copy source code
+COPY src ./src
 
-RUN mvn -B -DskipTests package
+# Build the application
+RUN mvn clean package -DskipTests
 
-# ---------- RUNTIME STAGE ----------
-FROM eclipse-temurin:17-jre-jammy
+# ---------- Run stage ----------
+FROM eclipse-temurin:11-jre
 WORKDIR /app
 
-COPY --from=build /app/target/*.jar app.jar
+# Copy the built jar
+COPY --from=build /app/target/saas-backend.jar app.jar
 
-ENV JAVA_OPTS=""
-ENTRYPOINT ["sh","-c","java $JAVA_OPTS -Djava.security.egd=file:/dev/./urandom -jar /app/app.jar"]
+# Expose Spring Boot port
+EXPOSE 8080
+
+# Run the app
+ENTRYPOINT ["java", "-jar", "app.jar"]
